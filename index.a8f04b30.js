@@ -534,8 +534,8 @@ class Sketch {
     constructor(options){
         this.container = options.dom;
         this.sizes = {
-            width: this.container.offsetWidth,
-            height: this.container.offsetHeight
+            width: window.innerWidth,
+            height: window.innerHeight
         };
         this.renderer = new _three.WebGLRenderer({
             antialias: true
@@ -754,8 +754,8 @@ class Sketch {
         window.addEventListener("resize", this.resize.bind(this));
     }
     resize() {
-        this.sizes.width = this.container.offsetWidth;
-        this.sizes.height = this.container.offsetHeight;
+        this.sizes.width = window.innerWidth;
+        this.sizes.height = window.innerHeight;
         this.renderer.setSize(this.sizes.width, this.sizes.height);
         this.camera.aspect = this.sizes.width / this.sizes.height;
         // image cover please uncomment this when using ortho camera
@@ -781,7 +781,7 @@ class Sketch {
 }
 exports.default = Sketch;
 const canvas = new Sketch({
-    dom: document.getElementById("container")
+    dom: document.getElementById("canvas")
 });
 
 },{"three":"ktPTu","dat.gui":"k3xQk","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8","three/examples/jsm/controls/OrbitControls":"7mqRv","stats-js":"jYgp8","./utils/modelLoaderGLTF":"8FQLX","url:../static/models/stanlyMaBoi/Stan.gltf":"2MkVD"}],"ktPTu":[function(require,module,exports) {

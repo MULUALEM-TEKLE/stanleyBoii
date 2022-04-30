@@ -47,13 +47,14 @@
         margin: 0;
         padding: 0;
       }
-      #container {
-        width: 100vw;
-        height: 100vh;
-      }
 
-      canvas {
-        display: block;
+      #canvas {
+        /* display: block; */
+        width: 100%;
+        height: 100%;
+        margin: 0%;
+        padding: 0%;
+        overflow: hidden;
       }
 
       .material-symbols-outlined {
@@ -67,7 +68,7 @@
 
       .signature-slot {
         z-index: 999;
-        width: 100vh;
+        width: 100%;
         font-family: "Nunito Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
           sans-serif;
         position: absolute;
@@ -98,7 +99,8 @@
     </style>
   </head>
   <body>
-    <div id="container"></div>
+    <div class="container-fluid" id="container"></div>
+    <div id="canvas"></div>
     <div class="row justify-content-start signature-slot">
       <div class="col-lg-3 col-md-6 col-sm-12 px-2 mx-3">
         <div class="stamp text-center">
