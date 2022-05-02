@@ -607,9 +607,19 @@ class Sketch {
         this.stanleyBoi.scale.setScalar(1.5);
         this.stanleyBoi.position.set(0, 0, 4);
         this.stanleyBrainBox = this.stanleyBoi.getObjectById(16);
-        console.log(this.stanley.animations);
-        console.log(this.stanleyBrainBox);
+        this.stanleyChestBox = this.stanleyBoi.getObjectById(14);
+        this.stanleyNeck = this.stanleyBoi.getObjectById(15);
+        this.stanleyShoulderL = this.stanleyBoi.getObjectById(17);
+        this.stanleyShoulderR = this.stanleyBoi.getObjectById(32);
+        console.log(this.stanleyBoi);
         this.mixer = new _three.AnimationMixer(this.stanleyBoi);
+        this.clips = await this.loadStansAnimations(this.stanley.animations);
+        console.log(this.clips);
+        this.baseAction = this.clips.Idle;
+        this.activeAction = this.baseAction;
+        this.previousAction = this.clips.Death;
+        this.baseAction.play();
+        this.iconListeners();
         this.makeStanleyKubrickSayHi();
         this.scene.add(this.stanleyBoi);
         this.basicMatty = new _three.MeshBasicMaterial({
@@ -620,7 +630,6 @@ class Sketch {
         this.ground = new _three.Mesh(this.groundGeo, this.basicMatty);
         this.ground.rotation.set(-Math.PI / 2, 0, 0);
         this.scene.add(this.ground);
-        this.iconListeners();
     }
     async createStanley() {
         let { model , animations  } = await _modelLoaderGLTFDefault.default(_stanGltfDefault.default);
@@ -628,6 +637,14 @@ class Sketch {
             model: model,
             animations: animations
         };
+    }
+    async loadStansAnimations(animations) {
+        this.animtionClips = {
+        };
+        animations.forEach((element)=>{
+            this.animtionClips[element.name] = this.mixer.clipAction(element);
+        });
+        return this.animtionClips;
     }
     settings() {
         let that = this;
@@ -651,60 +668,42 @@ class Sketch {
         });
     }
     iconListeners() {
-        console.log("icon listner entered");
-        this.telegramIcon = document.getElementById("telegram");
-        this.discordIcon = document.getElementById("discord");
-        this.twitterIcon = document.getElementById("twitter");
-        this.emailIcon = document.getElementById("gmail");
+        this.telegramIcon = document.getElementById("telegram-icon");
+        this.discordIcon = document.getElementById("discord-icon");
+        this.twitterIcon = document.getElementById("twitter-icon");
+        this.emailIcon = document.getElementById("gmail-icon");
         let sayNahStart = ()=>{
-            console.log("in");
-            this.rotateMesh = false;
-            this.mixer.clipAction(this.stanley.animations[8]).play();
-        };
-        let sayNahEnd = ()=>{
-            this.rotateMesh = true;
-            this.mixer.clipAction(this.stanley.animations[8]).stop();
+            this.switchClipActions(this.clips.No, 1);
         };
         let sayYahStart = ()=>{
-            console.log("in");
-            this.rotateMesh = false;
-            this.mixer.clipAction(this.stanley.animations[17]).play();
-        };
-        let sayYahEnd = ()=>{
-            this.rotateMesh = true;
-            this.mixer.clipAction(this.stanley.animations[17]).stop();
+            this.switchClipActions(this.clips.Yes, 1);
         };
         let sayHellYahStart = ()=>{
-            console.log("in");
-            this.rotateMesh = false;
-            let action = this.mixer.clipAction(this.stanley.animations[10]);
-            action.loop = _three.LoopOnce;
-            action.play();
-        };
-        let sayHellYahEnd = ()=>{
-            this.rotateMesh = true;
-            this.mixer.clipAction(this.stanley.animations[10]).stop();
+            this.switchClipActions(this.clips.Punch, 3);
         };
         let sayDeadYahStart = ()=>{
-            console.log("in");
-            this.rotateMesh = false;
-            let action = this.mixer.clipAction(this.stanley.animations[3]);
-            action.loop = _three.LoopOnce;
-            action.setDuration(1.775);
-            action.play();
+            this.switchClipActions(this.clips.HitRecieve_2, 1);
         };
-        let sayDeadYahEnd = ()=>{
-            this.rotateMesh = true;
-            this.mixer.clipAction(this.stanley.animations[3]).stop();
-        };
-        this.emailIcon.onmouseenter = sayNahStart;
-        this.emailIcon.onmouseleave = sayNahEnd;
-        this.telegramIcon.onmouseenter = sayYahStart;
-        this.telegramIcon.onmouseleave = sayYahEnd;
-        this.discordIcon.onmouseenter = sayHellYahStart;
-        this.discordIcon.onmouseleave = sayHellYahEnd;
-        this.twitterIcon.onmouseenter = sayDeadYahStart;
-        this.twitterIcon.onmouseleave = sayDeadYahEnd;
+        this.emailIcon.onmouseover = sayNahStart;
+        this.telegramIcon.onmouseover = sayYahStart;
+        this.discordIcon.onmouseover = sayHellYahStart;
+        this.twitterIcon.onmouseover = sayDeadYahStart;
+    }
+    switchClipActions(newAction, actionRepeatNumber) {
+        if (this.previousAction != null && this.activeAction != null) {
+            this.activeAction.fadeOut(0.25);
+            this.previousAction = this.activeAction;
+            this.activeAction = newAction;
+            this.fadeInClip(this.activeAction, 0.25);
+            setTimeout(()=>{
+                this.activeAction.fadeOut(0.25);
+                this.activeAction = this.baseAction;
+                this.fadeInClip(this.activeAction, 0.15);
+            }, this.activeAction._clip.duration * 1000 * actionRepeatNumber);
+        }
+    }
+    fadeInClip(clip, duration, effectiveTimeScale = 1, effectiveWeight = 1) {
+        clip.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).fadeIn(duration).play();
     }
     makeStanleyKubrickSayHi() {
         window.addEventListener("keypress", (e)=>{
@@ -742,7 +741,11 @@ class Sketch {
         this.renderer.render(this.scene, this.camera);
         if (this.rotateMesh) {
             this.stanleyBrainBox.rotation.x = this.lerp(-0.25, 0.25, this.mouse.y);
-            this.stanleyBrainBox.rotation.y = this.lerp(-0.425, 0.425, this.mouse.x);
+            this.stanleyShoulderL.rotation.y = this.lerp(0.2, 0.35, this.mouse.x);
+            this.stanleyShoulderR.rotation.y = this.lerp(-0.35, -0.2, this.mouse.x);
+            //finding the sweet points
+            /* this.stanleyShoulderL.rotation.x = this.lerp(0.2, 0.35, this.mouse.y);
+      this.stanleyShoulderR.rotation.x = this.lerp(-0.35, -0.2, this.mouse.y); */ this.stanleyBrainBox.rotation.y = this.lerp(-0.425, 0.425, this.mouse.x);
         }
         if (this.mixer) this.mixer.update(this.time);
         this.renderer.render(this.scene, this.camera);
